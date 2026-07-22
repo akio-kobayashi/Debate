@@ -305,7 +305,37 @@ sudo journalctl -u debate-api -n 100 --no-pager
 
 TailscaleまたはNetBirdを使う場合の詳細は [SETUP_UBUNTU.md](SETUP_UBUNTU.md) を参照する。
 
-## 14. 関連資料
+## 14. サーバー更新用スクリプト
+
+アップデート後は、サーバー上で次のスクリプトを実行する。Python依存関係、`OLLAMA_MODEL`、`OLLAMA_NUM_CTX`を反映し、OllamaとDebate APIを再起動した後、APIのヘルスチェックを行う。
+
+~~~bash
+cd /opt/Debate
+sudo ./server/scripts/update_server.sh
+~~~
+
+Ollama本体とモデルも更新する場合は、オプションを付ける。
+
+~~~bash
+sudo ./server/scripts/update_server.sh \
+  --update-ollama \
+  --pull-model
+~~~
+
+コード取得もスクリプトに含める場合は、`--pull-code`を付ける。このオプションは、サーバー側の作業ツリーに未コミット変更があると停止する。
+
+~~~bash
+sudo ./server/scripts/update_server.sh --pull-code
+~~~
+
+コンテキスト長を変更する場合は、環境変数で指定できる。
+
+~~~bash
+sudo OLLAMA_NUM_CTX=65536 \
+  ./server/scripts/update_server.sh
+~~~
+
+## 15. 関連資料
 
 - [クライアント設計](CLIENT_DESIGN.md)
 - [サーバー実装計画](SERVER_IMPLEMENTATION_PLAN.md)
