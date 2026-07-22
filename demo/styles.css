@@ -198,14 +198,14 @@ main {
 .stage-dialog .primary-button, .stage-dialog .secondary-button { min-height: 34px; padding: 0 11px; font-size: 10px; }
 .summary-dialog .summary-box:last-child { grid-column: 1 / -1; }
 .summary-dialog .summary-box p { font-size: 13px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
-.message-dialog { width: min(900px, calc(100vw - 32px)); max-height: min(82vh, 720px); margin: auto; padding: 0; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: #fff; box-shadow: 0 24px 70px rgba(7, 29, 61, .25); overflow: hidden; }
+.message-dialog { width: min(1180px, calc(100vw - 48px)); height: min(88vh, 860px); max-height: 88vh; margin: auto; padding: 0; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: #fff; box-shadow: 0 24px 70px rgba(7, 29, 61, .25); overflow: hidden; }
 .message-dialog::backdrop { background: rgba(7, 29, 61, .48); }
-.message-dialog > #messageDialogContent { max-height: min(68vh, 610px); padding: 15px 17px 20px; overflow-y: auto; }
+.message-dialog > #messageDialogContent { height: calc(100% - 66px); max-height: none; padding: clamp(24px, 3vw, 42px); overflow-y: auto; }
 .message-entry + .message-entry { margin-top: 14px; padding-top: 14px; border-top: 1px solid #e3e7ee; }
 .message-entry-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 7px; }
-.message-entry-heading strong { color: var(--purple); font-size: 12px; }
-.message-entry-heading span { color: #8993a3; font-size: 10px; }
-.message-entry-text { margin: 0; padding: 12px 14px; border-radius: 9px; color: #273449; background: #f7f9fc; font-size: 14px; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
+.message-entry-heading strong { color: var(--purple); font-size: clamp(15px, 1.2vw, 19px); }
+.message-entry-heading span { color: #8993a3; font-size: clamp(12px, .95vw, 15px); }
+.message-entry-text { margin: 0; padding: clamp(18px, 1.8vw, 26px); border-radius: 12px; color: #273449; background: #f7f9fc; font-size: clamp(18px, 1.4vw, 23px); line-height: 1.85; white-space: pre-wrap; overflow-wrap: anywhere; }
 .summary-dialog-intro { margin: 7px 0 13px; color: #697586; font-size: 12px; line-height: 1.6; }
 .summary-dialog-note { margin-top: 12px; color: #697586; font-size: 11px; line-height: 1.6; }
 .drive-link { color: var(--blue); font-size: 11px; font-weight: 800; text-decoration: none; }
@@ -235,4 +235,7 @@ main {
   .footer-bar { min-height: 72px; padding: 12px 20px; }
   .footer-status > span:last-child { display: none; }
   .footer-actions { flex-wrap: wrap; justify-content: flex-end; }
+  .message-dialog { width: calc(100vw - 24px); height: 88vh; }
+  .message-dialog > #messageDialogContent { padding: 18px; }
+  .message-entry-text { font-size: 16px; line-height: 1.75; }
 }
