@@ -18,6 +18,8 @@ OllamaのAPIは **127.0.0.1:11434** に限定する。ノートPCからOllamaへ
 - [Ollama Chat API](https://docs.ollama.com/api/chat)
 - [Ollama streaming](https://docs.ollama.com/capabilities/streaming)
 
+Ollama本体の更新方法は [ollama.md](ollama.md) に分離して記載する。
+
 ## 1. 前提
 
 - Ubuntu 22.04 LTSまたは24.04 LTS
