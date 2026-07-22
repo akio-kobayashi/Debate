@@ -1,5 +1,7 @@
 # Ubuntuサーバーセットアップ
 
+全体の導入・運用手順は [SETUP.md](SETUP.md) を基準とする。この文書はUbuntuとTailscale/NetBirdの補足資料である。
+
 Debate Demoの初版サーバーは、Ubuntu上でOllamaとDebate APIを同じマシンに配置する。
 
 ~~~text

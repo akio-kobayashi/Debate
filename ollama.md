@@ -1,5 +1,7 @@
 # Ollamaの導入・更新手順
 
+全体の導入・運用手順は [SETUP.md](SETUP.md) を基準とする。この文書はOllama単独の補足資料である。
+
 Debate Demoでは、Ubuntuサーバー上のOllamaをsystemdサービスとして利用する。
 
 OllamaのAPIは外部公開せず、Debate APIからlocalhost経由で接続する。
