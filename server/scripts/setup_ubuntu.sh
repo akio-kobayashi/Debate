@@ -120,7 +120,7 @@ systemctl enable --now ollama
 log "waiting for Ollama"
 ollama_ready=0
 for _ in $(seq 1 60); do
-  if curl -fsS http://127.0.0.1:11434/api/tags >/dev/null; then
+  if curl -fsS http://127.0.0.1:11434/api/tags >/dev/null 2>&1; then
     ollama_ready=1
     break
   fi
@@ -202,7 +202,7 @@ systemctl enable --now debate-api
 
 api_ready=0
 for _ in $(seq 1 30); do
-  if curl -fsS http://127.0.0.1:"$DEBATE_PORT"/health >/dev/null; then
+  if curl -fsS http://127.0.0.1:"$DEBATE_PORT"/health >/dev/null 2>&1; then
     api_ready=1
     break
   fi
