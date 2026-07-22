@@ -66,6 +66,26 @@ function latestMessage(speaker) {
   return null;
 }
 
+function messagesForSpeaker(speaker) {
+  const messages = (state.session?.messages || []).filter((message) => message.speaker === speaker);
+  const liveText = state.liveText[speaker] || "";
+  return liveText ? messages.concat([{ kind: "live", text: liveText }]) : messages;
+}
+
+function latestMessageOfKind(speaker, kind) {
+  const messages = state.session?.messages || [];
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    if (messages[index].speaker === speaker && messages[index].kind === kind) return messages[index];
+  }
+  return null;
+}
+
+const SPEAKER_LABELS = {
+  A: "A 賛成側",
+  B: "B 反対側",
+  C: "C ファシリテーター",
+};
+
 function roleStatus(speaker) {
   if (state.session?.status === "generating" && state.session.current_speaker === speaker) {
     return '<span class="status-dot"></span>生成中';
@@ -90,6 +110,9 @@ function renderRolePanels() {
   $("#statusA").innerHTML = roleStatus("A");
   $("#statusB").innerHTML = roleStatus("B");
   $("#statusC").innerHTML = roleStatus("C");
+  document.querySelectorAll(".role-detail-button").forEach((button) => {
+    button.disabled = messagesForSpeaker(button.dataset.speaker).length === 0;
+  });
 
   if (!state.session) {
     $("#bodyC").innerHTML = '<p class="empty-state">テーマを入力すると、整理結果が表示されます。</p>';
@@ -144,6 +167,7 @@ function renderControls() {
   renderRound();
   const generating = ["generating", "stopping"].includes(state.session?.status);
   const finished = state.session?.status === "finished";
+  $("#summaryButton").classList.toggle("hidden", !finished);
   $("#startButton").disabled = generating || finished;
   $("#stopButton").disabled = !generating;
   $("#startButton").innerHTML = finished ? "終了" : "次の発言 <span>›</span>";
@@ -166,6 +190,37 @@ function render() {
   renderControls();
   renderRolePanels();
   renderTimeline();
+}
+
+function openMessageDialog(speaker) {
+  const dialog = $("#messageDialog");
+  const content = $("#messageDialogContent");
+  const messages = messagesForSpeaker(speaker);
+  $("#messageDialogTitle").textContent = (SPEAKER_LABELS[speaker] || speaker) + " 発言全文";
+  content.innerHTML = messages.length
+    ? messages.map((message, index) => {
+      const label = TURN_LABELS[message.kind] || (message.kind === "live" ? "生成中" : "発言");
+      return '<article class="message-entry"><div class="message-entry-heading"><strong>' +
+        escapeHtml(label) + '</strong><span>第' + (index + 1) + '発言</span></div><p class="message-entry-text">' +
+        escapeHtml(message.text || "") + "</p></article>";
+    }).join("")
+    : '<p class="empty-state">まだ発言はありません。</p>';
+  dialog.showModal();
+}
+
+function openSummaryDialog() {
+  const aMessage = latestMessageOfKind("A", "closing") || latestMessage("A");
+  const bMessage = latestMessageOfKind("B", "closing") || latestMessage("B");
+  const cMessage = latestMessageOfKind("C", "summary") || latestMessage("C");
+  $("#stageDialog .dialog-heading h2").textContent = "ファシリテーターの最終整理";
+  $("#stageContent").innerHTML =
+    '<p class="summary-dialog-intro">アンケート回答の前に、A・Bの最終主張と、Cによる最終整理を確認してください。</p>' +
+    '<div class="summary-grid">' +
+    '<div class="summary-box"><h4>A 賛成側の最終主張</h4><p>' + escapeHtml(aMessage?.text || "未生成") + "</p></div>" +
+    '<div class="summary-box"><h4>B 反対側の最終主張</h4><p>' + escapeHtml(bMessage?.text || "未生成") + "</p></div>" +
+    '<div class="summary-box"><h4>C ファシリテーターの最終整理</h4><p>' + escapeHtml(cMessage?.text || "未生成") + "</p></div>" +
+    '</div><p class="summary-dialog-note">必要であれば、各パネルの「全文」から過去の発言も確認できます。</p>';
+  $("#stageDialog").showModal();
 }
 
 function applySession(session) {
@@ -312,6 +367,11 @@ $("#themeForm").addEventListener("submit", startOrNext);
 $("#stopButton").addEventListener("click", stopGeneration);
 $("#resetButton").addEventListener("click", resetDebate);
 $("#reconnectButton").addEventListener("click", reconnect);
+$("#summaryButton").addEventListener("click", openSummaryDialog);
 $("#closeStageDialogButton").addEventListener("click", () => $("#stageDialog").close());
+document.querySelectorAll(".role-detail-button").forEach((button) => {
+  button.addEventListener("click", () => openMessageDialog(button.dataset.speaker));
+});
+$("#closeMessageDialogButton").addEventListener("click", () => $("#messageDialog").close());
 render();
 reconnect();

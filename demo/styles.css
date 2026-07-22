@@ -132,6 +132,12 @@ main {
 .role-status { margin-left: auto; flex: 0 0 auto; color: #667085; font-size: clamp(11px, .95vw, 15px); font-weight: 700; white-space: nowrap; }
 .role-a .role-status { color: var(--blue); }
 .role-a .role-status .status-dot { box-shadow: 0 0 0 4px rgba(20, 97, 217, .12); }
+.role-detail-button { flex: 0 0 auto; padding: 5px 9px; border: 1px solid #c6ceda; border-radius: 6px; color: #526174; background: rgba(255,255,255,.7); font-size: clamp(10px, .8vw, 12px); font-weight: 800; }
+.role-detail-button:hover:not(:disabled) { background: #fff; }
+.role-detail-button:disabled { opacity: .45; }
+.role-detail-a { border-color: #9cbcf2; color: var(--blue); }
+.role-detail-b { border-color: #f0aaa6; color: var(--red); }
+.role-detail-c { border-color: #c9c0ef; color: var(--purple); }
 .role-body { min-height: 0; flex: 1; margin: 0 clamp(16px, 1.4vw, 22px) clamp(16px, 1.8vh, 20px); padding: clamp(15px, 1.5vw, 22px); overflow-x: hidden; overflow-y: scroll; scrollbar-gutter: stable; border: 1px solid #e2e7ee; border-radius: 14px; background: rgba(255,255,255,.78); }
 .role-body::-webkit-scrollbar { width: 9px; }
 .role-body::-webkit-scrollbar-track { border-radius: 9px; background: #edf0f5; }
@@ -163,6 +169,7 @@ main {
 .footer-status { display: flex; align-items: center; gap: 18px; }
 .footer-status strong { font-size: clamp(17px, 1.55vw, 25px); }
 .footer-status > span:last-child { color: #d4dce8; font-size: clamp(12px, 1vw, 16px); }
+.footer-actions { display: flex; align-items: center; gap: 10px; }
 .loading-ring { width: 40px; height: 40px; border: 5px dotted var(--blue); border-radius: 50%; animation: spin 1.8s linear infinite; }
 .reconnect-button { min-height: 50px; padding: 0 28px; border: 1px solid #b5c0cf; border-radius: 9px; color: #fff; background: transparent; font-size: clamp(14px, 1.1vw, 18px); font-weight: 800; }
 .reconnect-button:hover { background: rgba(255,255,255,.1); }
@@ -189,6 +196,18 @@ main {
 .stage-dialog .section-footer { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
 .stage-dialog .button-hint { margin-right: auto; color: #8a93a1; font-size: 9px; }
 .stage-dialog .primary-button, .stage-dialog .secondary-button { min-height: 34px; padding: 0 11px; font-size: 10px; }
+.summary-dialog .summary-box:last-child { grid-column: 1 / -1; }
+.summary-dialog .summary-box p { font-size: 13px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+.message-dialog { width: min(900px, calc(100vw - 32px)); max-height: min(82vh, 720px); margin: auto; padding: 0; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: #fff; box-shadow: 0 24px 70px rgba(7, 29, 61, .25); overflow: hidden; }
+.message-dialog::backdrop { background: rgba(7, 29, 61, .48); }
+.message-dialog > #messageDialogContent { max-height: min(68vh, 610px); padding: 15px 17px 20px; overflow-y: auto; }
+.message-entry + .message-entry { margin-top: 14px; padding-top: 14px; border-top: 1px solid #e3e7ee; }
+.message-entry-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 7px; }
+.message-entry-heading strong { color: var(--purple); font-size: 12px; }
+.message-entry-heading span { color: #8993a3; font-size: 10px; }
+.message-entry-text { margin: 0; padding: 12px 14px; border-radius: 9px; color: #273449; background: #f7f9fc; font-size: 14px; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
+.summary-dialog-intro { margin: 7px 0 13px; color: #697586; font-size: 12px; line-height: 1.6; }
+.summary-dialog-note { margin-top: 12px; color: #697586; font-size: 11px; line-height: 1.6; }
 
 @media (max-width: 900px) {
   body { overflow: auto; }
@@ -205,4 +224,5 @@ main {
   .timeline-item { min-width: 190px; }
   .footer-bar { min-height: 72px; padding: 12px 20px; }
   .footer-status > span:last-child { display: none; }
+  .footer-actions { flex-wrap: wrap; justify-content: flex-end; }
 }

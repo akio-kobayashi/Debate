@@ -42,6 +42,7 @@
             <div class="role-header">
               <div class="role-avatar">A</div>
               <div class="role-title"><h2>賛成側</h2><p>テーマを支持する立場</p></div>
+              <button class="role-detail-button role-detail-a" type="button" data-speaker="A" disabled>全文</button>
               <span class="role-status" id="statusA"><span class="status-dot"></span>待機中</span>
             </div>
             <div class="role-body" id="bodyA"><p class="empty-state">テーマを入力すると、ここに表示されます。</p></div>
@@ -51,6 +52,7 @@
             <div class="role-header">
               <div class="role-avatar">B</div>
               <div class="role-title"><h2>反対側</h2><p>テーマに反対する立場</p></div>
+              <button class="role-detail-button role-detail-b" type="button" data-speaker="B" disabled>全文</button>
               <span class="role-status" id="statusB"><span class="status-dot idle-dot"></span>待機中</span>
             </div>
             <div class="role-body" id="bodyB"><p class="empty-state">テーマを入力すると、ここに表示されます。</p></div>
@@ -60,6 +62,7 @@
             <div class="role-header">
               <div class="role-avatar">C</div>
               <div class="role-title"><h2>ファシリテーター</h2><p>論点を整理する中立的な進行役</p></div>
+              <button class="role-detail-button role-detail-c" type="button" data-speaker="C" disabled>全文</button>
               <span class="role-status" id="statusC"><span class="status-dot idle-dot"></span>待機中</span>
             </div>
             <div class="role-body" id="bodyC"><p class="empty-state">テーマを入力すると、整理結果が表示されます。</p></div>
@@ -80,15 +83,26 @@
           <strong id="footerStatus">待機中</strong>
           <span id="footerMessage">テーマを入力して開始してください</span>
         </div>
-        <button class="reconnect-button" type="button" id="reconnectButton">⟳ 再接続</button>
+        <div class="footer-actions">
+          <button class="reconnect-button summary-button hidden" type="button" id="summaryButton">まとめを確認</button>
+          <button class="reconnect-button" type="button" id="reconnectButton">⟳ 再接続</button>
+        </div>
       </footer>
 
-      <dialog id="stageDialog" class="stage-dialog">
+      <dialog id="stageDialog" class="stage-dialog summary-dialog">
         <div class="dialog-heading">
           <div><p>TEACHER DETAIL</p><h2>現在段階の確認</h2></div>
           <button class="dialog-close" id="closeStageDialogButton" type="button" aria-label="閉じる">×</button>
         </div>
         <section id="stageContent" aria-live="polite"></section>
+      </dialog>
+
+      <dialog id="messageDialog" class="message-dialog">
+        <div class="dialog-heading">
+          <div><p>FULL TRANSCRIPT</p><h2 id="messageDialogTitle">発言全文</h2></div>
+          <button class="dialog-close" id="closeMessageDialogButton" type="button" aria-label="閉じる">×</button>
+        </div>
+        <section id="messageDialogContent" aria-live="polite"></section>
       </dialog>
     </div>
     <script src="./app.js"></script>
