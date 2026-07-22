@@ -11,7 +11,7 @@
 Debate API・Web画面 ── localhost ── Ollama
 ~~~
 
-Ollamaは外部公開せず、Debate APIだけをクライアントへ公開します。オーバーレイネットワークはセットアップ時に選択できます。
+Ollamaは外部公開せず、Debate APIだけをクライアントへ公開します。接続方式はTailscale、NetBird、SSHトンネルから選択できます。
 
 ## Ubuntuサーバー
 
@@ -37,6 +37,23 @@ sudo DEBATE_USER=ubuntu ./server/scripts/setup_ubuntu.sh \
 ~~~
 
 `tailscale up` または `netbird up` は、認証情報を保存しないため手動で実行します。
+
+SSHトンネルを使う場合：
+
+~~~bash
+ssh -N \
+  -o ExitOnForwardFailure=yes \
+  -o ServerAliveInterval=30 \
+  -o ServerAliveCountMax=3 \
+  -L 8000:127.0.0.1:8000 \
+  ubuntu@<server-host>
+~~~
+
+別のターミナルでブラウザを開きます。
+
+~~~bash
+DEBATE_URL=http://127.0.0.1:8000 ./client/launch_demo.sh
+~~~
 
 ## クライアント
 

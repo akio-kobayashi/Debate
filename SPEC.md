@@ -16,7 +16,7 @@
 
 ```text
 ブラウザ（クライアント画面）
-        │ HTTPS / Tailscale Serve または NetBird
+        │ HTTPS / Tailscale Serve / NetBird / SSHトンネル
         ▼
 Debate API・Web画面サーバー
         │ localhost
@@ -36,12 +36,13 @@ Ollamaサーバー（LLM推論）
 
 ### 2.2 オーバーレイネットワーク（Tailscale / NetBird）
 
-- TailscaleまたはNetBirdのどちらか一方を、サーバーとクライアントの接続手段として選択する。
+- Tailscale、NetBird、SSHトンネルのいずれかを、サーバーとクライアントの接続手段として選択する。
 - インターネットへポートフォワーディングしない。
 - TailscaleではACLまたはGrantで、利用を許可したクライアントだけがDebate APIへ接続できるようにする。
 - NetBirdではAccess Policyで、許可したクライアントからサーバーのTCP 8000番だけを許可する。
 - Tailscaleの推奨構成は、`tailscale serve` でlocalhostのDebate APIをHTTPS公開する方式とする。
 - 直接接続方式では、8000番のホスト側ファイアウォールもオーバーレイ側に限定する。
+- SSHトンネル方式では、Debate APIを127.0.0.1だけで待ち受けさせ、SSHのローカルポートフォワーディングで接続する。
 - セットアップは `server/scripts/setup_ubuntu.sh --overlay tailscale` または `--overlay netbird` で切り替える。
 
 ### 2.3 クライアント

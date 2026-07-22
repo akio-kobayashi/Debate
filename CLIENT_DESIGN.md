@@ -2,7 +2,7 @@
 
 ## 1. 目的
 
-ノートPCからTailscaleまたはNetBird経由でDebate APIへ接続し、ディベートの状態と発言を分かりやすく表示する。
+ノートPCからTailscale、NetBird、またはSSHトンネル経由でDebate APIへ接続し、ディベートの状態と発言を分かりやすく表示する。
 
 クライアントは次の2種類を想定する。
 
@@ -65,8 +65,15 @@ Ubuntuサーバー
 | Tailscale Serve | localhostの8000番をServeでHTTPS公開 | TailscaleのHTTPS URL |
 | Tailscale直接 | オーバーレイIPの8000番 | Tailscale IPのHTTP URL |
 | NetBird直接 | NetBird IPの8000番 | NetBird IPのHTTP URL |
+| SSHトンネル | SSH転送先のlocalhost:8000 | http://127.0.0.1:8000 |
 
 Tailscale Serveを使う場合はHTTPSを優先する。直接接続方式を使う場合は、TCP 8000番をオーバーレイ側ポリシーとホスト側ファイアウォールで制限する。
+
+SSHトンネル方式では、サーバーのDebate APIを127.0.0.1だけで待ち受けさせ、ノートPCから次の転送を行う。
+
+~~~bash
+ssh -N -L 8000:127.0.0.1:8000 ubuntu@<server-host>
+~~~
 
 ### 4.1 接続先
 
