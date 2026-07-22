@@ -110,7 +110,7 @@ ThemeContext：
 今回の指示：
 {TURN_INSTRUCTIONS[kind]}
 
-1回の発言は{session.model and 500 or 500}日本語文字程度以内を目安にしてください。
+必要な論拠を省略せず、発言を完結させてください。途中で切らないでください。
 """
     return [
         {"role": "system", "content": COMMON_RULES + "\n" + ROLE_PROMPTS[speaker]},

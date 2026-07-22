@@ -357,7 +357,7 @@ class DebateController:
                 "speaker": speaker,
                 "turn_index": turn_index,
                 "kind": kind,
-                "text": text[: self.settings.debate_max_chars],
+                "text": text,
                 "status": "completed",
             }
             from .state import DebateMessage
