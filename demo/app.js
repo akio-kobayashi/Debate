@@ -96,7 +96,8 @@ function renderRolePanels() {
     return;
   }
   const context = state.session.theme_context || {};
-  const current = context.current_issue || context.evaluation_axes || "テーマから論点を抽出しています。";
+  const current = context.current_issue || context.evaluation_axes || context.motion ||
+    context.definitions || "テーマから論点を抽出しています。";
   const activeSpeaker = state.session.current_speaker;
   const activeKind = state.session.current_kind;
   const next = activeSpeaker && activeKind

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import re
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -10,6 +9,7 @@ from .config import Settings
 from .ollama_client import GenerationStopped, OllamaClient, OllamaError
 from .prompts import build_messages
 from .state import DebateSession, SessionStore, TURN_PLAN, now_iso
+from .theme_context import extract_theme_context
 
 
 class ControllerError(RuntimeError):
@@ -218,26 +218,6 @@ class DebateController:
             "turn_index": turn_index,
             "state": session.public(),
         })
-
-
-def extract_theme_context(text: str) -> dict[str, Any]:
-    labels = {
-        "motion": "議題（整理後）",
-        "definitions": "用語の定義",
-        "scope": "対象範囲・前提",
-        "evaluation_axes": "主な評価観点",
-        "current_issue": "現在の論点",
-        "next_instruction": "次の指示",
-    }
-    result: dict[str, Any] = {}
-    for key, label in labels.items():
-        pattern = rf"{re.escape(label)}：?\\s*(.*?)(?=\\n[^\\n：]+：|\\Z)"
-        match = re.search(pattern, text, flags=re.DOTALL)
-        if match:
-            result[key] = match.group(1).strip()
-    if "motion" not in result:
-        result["motion"] = text[:300].strip()
-    return result
 
 
 async def event_stream(controller: DebateController, debate_id: str) -> AsyncIterator[str]:
