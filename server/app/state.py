@@ -47,6 +47,14 @@ class DebateSession:
     current_text: str = ""
     theme_context: dict[str, Any] = field(default_factory=dict)
     messages: list[DebateMessage] = field(default_factory=list)
+    reference_status: str = "not_started"
+    reference_data: dict[str, Any] = field(default_factory=dict)
+    reference_drive: dict[str, str] = field(default_factory=dict)
+    survey_status: str = "not_started"
+    survey_started_at: str | None = None
+    survey_analysis: dict[str, Any] = field(default_factory=dict)
+    survey_drive: dict[str, str] = field(default_factory=dict)
+    survey_error: str | None = None
     error_message: str | None = None
     created_at: str = field(default_factory=now_iso)
     updated_at: str = field(default_factory=now_iso)
@@ -54,6 +62,7 @@ class DebateSession:
     lock: asyncio.Lock = field(default_factory=asyncio.Lock, repr=False)
     stop_requested: asyncio.Event = field(default_factory=asyncio.Event, repr=False)
     generation_task: asyncio.Task[Any] | None = field(default=None, repr=False)
+    operation_task: asyncio.Task[Any] | None = field(default=None, repr=False)
     event_sequence: int = field(default=0, repr=False)
 
     def public(self) -> dict[str, Any]:
@@ -69,6 +78,14 @@ class DebateSession:
             "current_text": self.current_text,
             "theme_context": self.theme_context,
             "messages": [asdict(message) for message in self.messages],
+            "reference_status": self.reference_status,
+            "reference_data": self.reference_data,
+            "reference_drive": self.reference_drive,
+            "survey_status": self.survey_status,
+            "survey_started_at": self.survey_started_at,
+            "survey_analysis": self.survey_analysis,
+            "survey_drive": self.survey_drive,
+            "survey_error": self.survey_error,
             "error_message": self.error_message,
             "created_at": self.created_at,
             "updated_at": self.updated_at,

@@ -175,6 +175,18 @@ DEBATE_BIND_HOST=$BIND_HOST
 DEBATE_PORT=$DEBATE_PORT
 OVERLAY_PROVIDER=$OVERLAY_PROVIDER
 ENV_FILE
+if [[ -n "${GOOGLE_FORM_ID:-}" ]]; then
+  printf 'GOOGLE_FORM_ID=%s\n' "$GOOGLE_FORM_ID" >> /etc/debate-api.env
+fi
+if [[ -n "${GOOGLE_DRIVE_FOLDER_ID:-}" ]]; then
+  printf 'GOOGLE_DRIVE_FOLDER_ID=%s\n' "$GOOGLE_DRIVE_FOLDER_ID" >> /etc/debate-api.env
+fi
+if [[ -n "${GOOGLE_OAUTH_CLIENT_SECRETS:-}" ]]; then
+  printf 'GOOGLE_OAUTH_CLIENT_SECRETS=%s\n' "$GOOGLE_OAUTH_CLIENT_SECRETS" >> /etc/debate-api.env
+fi
+if [[ -n "${GOOGLE_OAUTH_TOKEN:-}" ]]; then
+  printf 'GOOGLE_OAUTH_TOKEN=%s\n' "$GOOGLE_OAUTH_TOKEN" >> /etc/debate-api.env
+fi
 chmod 0644 /etc/debate-api.env
 
 cat > /etc/systemd/system/debate-api.service <<SERVICE_FILE

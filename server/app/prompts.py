@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from .state import DebateSession
 
 COMMON_RULES = """\
@@ -57,6 +59,20 @@ Bの最も強い主張：
 勝者や点数は出さないでください。""",
 }
 
+REFERENCE_SYSTEM = """\
+あなたはディベート資料を作成する中立的な編集者です。
+発言履歴に存在しない事実、根拠、出典、合意を追加してはいけません。
+各論点はA1〜A3、B1〜B3の最大3件に整理してください。
+必ずJSONオブジェクトだけを出力してください。Markdownのコードブロックは禁止します。
+"""
+
+ANALYSIS_SYSTEM = """\
+あなたはディベート後アンケートの分析者です。
+入力された集計値だけを解釈し、数値を再計算・変更してはいけません。
+個人を特定したり、回答していない内容を推測したりしてはいけません。
+日本語の短い分析文だけを出力してください。
+"""
+
 
 def history_text(session: DebateSession) -> str:
     if not session.messages:
@@ -99,4 +115,57 @@ ThemeContext：
     return [
         {"role": "system", "content": COMMON_RULES + "\n" + ROLE_PROMPTS[speaker]},
         {"role": "user", "content": user_content},
+    ]
+
+
+def build_reference_messages(session: DebateSession) -> list[dict[str, str]]:
+    schema = {
+        "motion": "議題と前提の短い説明",
+        "claims": {
+            "A": [{"id": "A1", "title": "論点名", "summary": "要約", "basis": "根拠"}],
+            "B": [{"id": "B1", "title": "論点名", "summary": "要約", "basis": "根拠"}],
+        },
+        "rebuttals": [{"from": "A", "to": "B1", "summary": "反論の要約"}],
+        "facilitator_summary": {
+            "agreements": ["合意点"],
+            "disagreements": ["対立点"],
+            "unresolved": ["未解決点"],
+        },
+    }
+    user_content = f"""\
+テーマ：
+{session.theme}
+
+ThemeContext：
+{theme_context_text(session)}
+
+発言履歴：
+{history_text(session)}
+
+次のJSON形式で、学生がアンケート回答時に参照できる資料を作成してください。
+論点の数はA・Bそれぞれ最大3件とし、発言にない根拠は空文字にしてください。
+JSONスキーマ例：
+{json.dumps(schema, ensure_ascii=False, indent=2)}
+"""
+    return [
+        {"role": "system", "content": REFERENCE_SYSTEM},
+        {"role": "user", "content": user_content},
+    ]
+
+
+def build_analysis_messages(
+    session: DebateSession, aggregate: dict[str, object]
+) -> list[dict[str, str]]:
+    return [
+        {"role": "system", "content": ANALYSIS_SYSTEM},
+        {
+            "role": "user",
+            "content": (
+                f"テーマ：\n{session.theme}\n\n"
+                "アンケートの集計結果：\n"
+                f"{json.dumps(aggregate, ensure_ascii=False, indent=2)}\n\n"
+                "回答傾向、支持された論点、重視された評価基準、今後の改善点を "
+                "500字以内で整理してください。"
+            ),
+        },
     ]

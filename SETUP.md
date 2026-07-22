@@ -236,6 +236,9 @@ ollama ps
 
 Ollama本体の更新とモデル更新は別である。Ollama更新後にDebate APIを確認する。
 
+Google Form回答の取得、アンケート用参照資料と分析レポートのGoogle Drive保存を使う場合は、
+[GOOGLE_WORKSPACE_SETUP.md](GOOGLE_WORKSPACE_SETUP.md)を追加で設定する。
+
 ~~~bash
 sudo systemctl status debate-api --no-pager
 curl -fsS http://127.0.0.1:8000/health

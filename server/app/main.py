@@ -35,6 +35,7 @@ async def health() -> dict[str, Any]:
         "model": settings.ollama_model,
         "overlay_provider": settings.overlay_provider,
         "ollama": "ok" if await controller.ollama.health() else "unavailable",
+        "google_workspace": "configured" if controller.google.configured else "disabled",
     }
 
 
@@ -101,6 +102,32 @@ async def reset_debate(debate_id: str) -> dict[str, Any]:
         return (await controller.reset(debate_id)).public()
     except ControllerError as exc:
         raise handle_controller_error(exc) from exc
+
+
+@app.post("/api/debates/{debate_id}/reference", status_code=202)
+async def generate_reference(debate_id: str) -> dict[str, Any]:
+    try:
+        session = await controller.start_reference(debate_id)
+    except ControllerError as exc:
+        raise handle_controller_error(exc) from exc
+    return {"status": "accepted", "state": session.public()}
+
+
+@app.post("/api/debates/{debate_id}/survey/start")
+async def start_survey(debate_id: str) -> dict[str, Any]:
+    try:
+        return (await controller.start_survey(debate_id)).public()
+    except ControllerError as exc:
+        raise handle_controller_error(exc) from exc
+
+
+@app.post("/api/debates/{debate_id}/survey/analyze", status_code=202)
+async def analyze_survey(debate_id: str) -> dict[str, Any]:
+    try:
+        session = await controller.start_survey_analysis(debate_id)
+    except ControllerError as exc:
+        raise handle_controller_error(exc) from exc
+    return {"status": "accepted", "state": session.public()}
 
 
 demo_dir = Path(__file__).resolve().parents[2] / "demo"

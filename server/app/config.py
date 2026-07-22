@@ -14,6 +14,12 @@ class Settings:
     bind_host: str = os.getenv("DEBATE_BIND_HOST", "0.0.0.0")
     port: int = int(os.getenv("DEBATE_PORT", "8000"))
     overlay_provider: str = os.getenv("OVERLAY_PROVIDER", "none").lower()
+    google_form_id: str = os.getenv("GOOGLE_FORM_ID", "")
+    google_drive_folder_id: str = os.getenv("GOOGLE_DRIVE_FOLDER_ID", "")
+    google_oauth_client_secrets: str = os.getenv(
+        "GOOGLE_OAUTH_CLIENT_SECRETS", ""
+    )
+    google_oauth_token: str = os.getenv("GOOGLE_OAUTH_TOKEN", "")
 
 
 settings = Settings()

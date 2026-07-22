@@ -208,6 +208,16 @@ main {
 .message-entry-text { margin: 0; padding: 12px 14px; border-radius: 9px; color: #273449; background: #f7f9fc; font-size: 14px; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
 .summary-dialog-intro { margin: 7px 0 13px; color: #697586; font-size: 12px; line-height: 1.6; }
 .summary-dialog-note { margin-top: 12px; color: #697586; font-size: 11px; line-height: 1.6; }
+.drive-link { color: var(--blue); font-size: 11px; font-weight: 800; text-decoration: none; }
+.drive-link:hover { text-decoration: underline; }
+.analysis-list { display: grid; gap: 9px; max-height: 46vh; overflow-y: auto; }
+.analysis-question { padding: 10px; border: 1px solid #e3e7ee; border-radius: 8px; background: #fbfcfe; }
+.analysis-question h4 { margin: 0 0 5px; font-size: 11px; line-height: 1.45; }
+.analysis-question p { margin: 0 0 6px; color: #697586; font-size: 10px; }
+.analysis-question ul { display: grid; gap: 3px; margin: 0; padding: 0; list-style: none; }
+.analysis-question li { display: flex; justify-content: space-between; gap: 10px; color: #344054; font-size: 10px; }
+.analysis-question li strong { white-space: nowrap; }
+.analysis-interpretation { margin-top: 10px; }
 
 @media (max-width: 900px) {
   body { overflow: auto; }

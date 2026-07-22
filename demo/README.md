@@ -26,4 +26,4 @@ python3 -m http.server 4173 --directory demo
 - 停止、リセット、再接続
 - 9ターンの進行履歴表示
 
-Google Formの回答取得・分析は、別途Google Forms/Sheets連携として追加します。
+Google Formの回答取得・分析とGoogle Drive保存は、[GOOGLE_WORKSPACE_SETUP.md](../GOOGLE_WORKSPACE_SETUP.md)を参照してください。
