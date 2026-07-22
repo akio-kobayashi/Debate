@@ -128,12 +128,17 @@ main {
 .role-status { margin-left: auto; flex: 0 0 auto; color: #667085; font-size: clamp(11px, .95vw, 15px); font-weight: 700; white-space: nowrap; }
 .role-a .role-status { color: var(--blue); }
 .role-a .role-status .status-dot { box-shadow: 0 0 0 4px rgba(20, 97, 217, .12); }
-.role-body { min-height: 0; flex: 1; margin: 0 clamp(16px, 1.4vw, 22px) clamp(16px, 1.8vh, 20px); padding: clamp(15px, 1.5vw, 22px); overflow: auto; border: 1px solid #e2e7ee; border-radius: 14px; background: rgba(255,255,255,.78); }
+.role-body { min-height: 0; flex: 1; margin: 0 clamp(16px, 1.4vw, 22px) clamp(16px, 1.8vh, 20px); padding: clamp(15px, 1.5vw, 22px); overflow-x: hidden; overflow-y: auto; scrollbar-gutter: stable; border: 1px solid #e2e7ee; border-radius: 14px; background: rgba(255,255,255,.78); }
+.role-body::-webkit-scrollbar { width: 9px; }
+.role-body::-webkit-scrollbar-track { border-radius: 9px; background: #edf0f5; }
+.role-body::-webkit-scrollbar-thumb { border: 2px solid #edf0f5; border-radius: 9px; background: #aeb8c7; }
+.role-body::-webkit-scrollbar-thumb:hover { background: #7f8da1; }
 .role-body > p { margin: 0; color: #273449; font-size: clamp(13px, 1.05vw, 17px); line-height: 1.65; white-space: pre-line; }
 .role-body .empty-state { color: #8d98a8; }
 .c-section h3 { margin: 0 0 10px; color: var(--purple); font-size: clamp(16px, 1.35vw, 22px); }
 .c-section + .c-section { margin-top: clamp(16px, 2vh, 24px); padding-top: clamp(16px, 2vh, 24px); border-top: 1px solid #d9d5ef; }
 .c-box { padding: clamp(12px, 1.1vw, 16px); border-radius: 9px; color: #2e3a50; background: #f0eefb; font-size: clamp(12px, 1vw, 16px); line-height: 1.65; }
+.c-speech-box { background: #fff; }
 
 .timeline-card { min-height: 0; padding: 0 clamp(20px, 2.1vw, 33px); display: flex; align-items: center; box-shadow: 0 1px 4px rgba(20, 37, 62, .05); }
 .timeline-list { width: 100%; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: clamp(8px, 1.2vw, 20px); }

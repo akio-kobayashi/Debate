@@ -95,6 +95,7 @@ function renderRolePanels() {
     $("#bodyC").innerHTML = '<p class="empty-state">テーマを入力すると、整理結果が表示されます。</p>';
     return;
   }
+  const cText = state.liveText.C || latestMessage("C")?.text || "";
   const context = state.session.theme_context || {};
   const current = context.current_issue || context.evaluation_axes || context.motion ||
     context.definitions || "テーマから論点を抽出しています。";
@@ -105,7 +106,12 @@ function renderRolePanels() {
     : state.session.status === "finished"
       ? "ディベートが終了しました。"
       : (context.next_instruction || nextInstruction());
-  $("#bodyC").innerHTML = '<div class="c-section"><h3>現在の論点</h3><div class="c-box">' +
+  const speech = cText
+    ? '<div class="c-section c-speech"><h3>ファシリテーターの発言</h3><div class="c-box c-speech-box">' +
+      escapeHtml(cText) + "</div></div>"
+    : "";
+  $("#bodyC").innerHTML = speech +
+    '<div class="c-section"><h3>現在の論点</h3><div class="c-box">' +
     escapeHtml(current) + '</div></div><div class="c-section"><h3>次の指示</h3><div class="c-box">' +
     escapeHtml(next) + "</div></div>";
 }
