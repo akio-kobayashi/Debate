@@ -26,7 +26,10 @@ button, textarea, input { font: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: .5; }
 h1, h2, h3, p { margin: 0; }
-.app-shell { min-height: 100vh; display: grid; grid-template-rows: clamp(56px, 6.8vh, 68px) minmax(0, 1fr) clamp(68px, 9vh, 91px); }
+.app-shell { height: 100vh; min-height: 0; display: grid; grid-template-rows: clamp(56px, 6.8vh, 68px) minmax(0, 1fr) clamp(68px, 9vh, 91px); }
+@supports (height: 100dvh) {
+  .app-shell { height: 100dvh; }
+}
 
 .topbar {
   display: flex;
@@ -47,6 +50,7 @@ h1, h2, h3, p { margin: 0; }
 
 main {
   min-height: 0;
+  overflow: hidden;
   width: calc(100% - clamp(32px, 3.8vw, 60px));
   margin: clamp(14px, 2.6vh, 26px) auto clamp(10px, 2vh, 20px);
   display: grid;
@@ -109,8 +113,8 @@ main {
 .stop-button b { margin-right: 8px; color: #e51f2a; font-size: 16px; }
 .theme-context { grid-column: 1 / -1; display: none; }
 
-.role-grid { min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(12px, 1.5vw, 23px); }
-.role-card { min-width: 0; min-height: 0; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 1px 4px rgba(20, 37, 62, .05); }
+.role-grid { min-height: 0; overflow: hidden; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(12px, 1.5vw, 23px); }
+.role-card { min-width: 0; min-height: 0; height: 100%; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 1px 4px rgba(20, 37, 62, .05); }
 .role-a { border: 2px solid var(--blue); background: var(--blue-soft); }
 .role-b { border: 2px solid var(--red); background: var(--red-soft); }
 .role-c { border: 2px solid #b9afea; background: var(--purple-soft); }
@@ -128,7 +132,7 @@ main {
 .role-status { margin-left: auto; flex: 0 0 auto; color: #667085; font-size: clamp(11px, .95vw, 15px); font-weight: 700; white-space: nowrap; }
 .role-a .role-status { color: var(--blue); }
 .role-a .role-status .status-dot { box-shadow: 0 0 0 4px rgba(20, 97, 217, .12); }
-.role-body { min-height: 0; flex: 1; margin: 0 clamp(16px, 1.4vw, 22px) clamp(16px, 1.8vh, 20px); padding: clamp(15px, 1.5vw, 22px); overflow-x: hidden; overflow-y: auto; scrollbar-gutter: stable; border: 1px solid #e2e7ee; border-radius: 14px; background: rgba(255,255,255,.78); }
+.role-body { min-height: 0; flex: 1; margin: 0 clamp(16px, 1.4vw, 22px) clamp(16px, 1.8vh, 20px); padding: clamp(15px, 1.5vw, 22px); overflow-x: hidden; overflow-y: scroll; scrollbar-gutter: stable; border: 1px solid #e2e7ee; border-radius: 14px; background: rgba(255,255,255,.78); }
 .role-body::-webkit-scrollbar { width: 9px; }
 .role-body::-webkit-scrollbar-track { border-radius: 9px; background: #edf0f5; }
 .role-body::-webkit-scrollbar-thumb { border: 2px solid #edf0f5; border-radius: 9px; background: #aeb8c7; }
@@ -188,7 +192,8 @@ main {
 
 @media (max-width: 900px) {
   body { overflow: auto; }
-  .app-shell { min-height: 100%; display: block; }
+  .app-shell { height: auto; min-height: 100%; display: block; }
+  main { height: auto; overflow: visible; }
   .topbar { min-height: 56px; padding: 12px 20px; }
   .topbar-meta i, .topbar-meta span:last-child { display: none; }
   main { width: calc(100% - 24px); margin: 12px auto; display: block; }
