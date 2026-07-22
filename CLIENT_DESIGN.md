@@ -2,7 +2,7 @@
 
 ## 1. 目的
 
-ノートPCからTailscale、NetBird、またはSSHトンネル経由でDebate APIへ接続し、ディベートの状態と発言を分かりやすく表示する。
+ノートPCからSSHトンネル、Tailscale、またはNetBird経由でDebate APIへ接続し、ディベートの状態と発言を分かりやすく表示する。教育デモの初版はSSHトンネルを標準とする。
 
 クライアントは次の2種類を想定する。
 
@@ -17,7 +17,7 @@
 
 ```text
 ノートPC
-  ├─ Tailscale または NetBird Client
+  ├─ SSHクライアント（初版）
   └─ ブラウザ（初版）
        │ HTTPS / Tailnet
        ▼
@@ -42,7 +42,7 @@ Ubuntuサーバー
 初版はブラウザを採用する。
 
 - ノートPCへのインストールが不要
-- Tailscale ServeのHTTPS URLを開くだけで利用できる
+- SSH接続を作成してlocalhostのURLを開くだけで利用できる
 - EventSourceによるGETのSSEをそのまま利用できる
 - 画面の修正と再配布が容易
 - 専用アプリと同じREST APIを利用できる
@@ -56,16 +56,16 @@ Ubuntuサーバー
 - オフライン時の設定保存が必要
 - 発表者向けの専用操作を追加したい
 
-## 4. オーバーレイネットワーク経由の接続
+## 4. 接続方式
 
-初版の通信契約はTailscaleとNetBirdで共通にする。クライアントはDebate APIのURLだけを持ち、OllamaのURLやオーバーレイ固有のAPIを持たない。
+初版の通信契約はSSHトンネル、Tailscale、NetBirdで共通にする。クライアントはDebate APIのURLだけを持ち、OllamaのURLや接続方式固有のAPIを持たない。
 
 | 方式 | サーバー側の入口 | クライアントURL |
 |---|---|---|
 | Tailscale Serve | localhostの8000番をServeでHTTPS公開 | TailscaleのHTTPS URL |
 | Tailscale直接 | オーバーレイIPの8000番 | Tailscale IPのHTTP URL |
 | NetBird直接 | NetBird IPの8000番 | NetBird IPのHTTP URL |
-| SSHトンネル | SSH転送先のlocalhost:8000 | http://127.0.0.1:8000 |
+| SSHトンネル（推奨） | SSH転送先のlocalhost:8000 | http://127.0.0.1:8000 |
 
 Tailscale Serveを使う場合はHTTPSを優先する。直接接続方式を使う場合は、TCP 8000番をオーバーレイ側ポリシーとホスト側ファイアウォールで制限する。
 

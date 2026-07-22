@@ -28,19 +28,20 @@ Ollamaサーバー（LLM推論）
 
 - Ollamaを動かす推論用マシンを1台用意する。
 - 同じマシン上でDebate APIを動かす。
-- Debate APIだけをTailscaleまたはNetBird経由でクライアントに公開する。
+- Debate APIだけをSSHトンネル、Tailscale、またはNetBird経由でクライアントに公開する。
 - Ollama APIは原則として `127.0.0.1:11434` で待ち受け、外部クライアントには直接公開しない。
 - Debate APIからOllamaへはローカル接続する。
 - A・B・Cは同じモデルを使用し、役割ごとにシステムプロンプトを切り替える。
 - 同時生成は行わず、プログラムで発言順を固定して逐次実行する。
 
-### 2.2 オーバーレイネットワーク（Tailscale / NetBird）
+### 2.2 クライアント接続方式
 
-- Tailscale、NetBird、SSHトンネルのいずれかを、サーバーとクライアントの接続手段として選択する。
+- 教育デモの初版ではSSHトンネルを標準方式とする。
+- 複数端末、常時運用、オーバーレイ側のアクセス制御が必要になった場合はTailscaleまたはNetBirdを選択する。
 - インターネットへポートフォワーディングしない。
 - TailscaleではACLまたはGrantで、利用を許可したクライアントだけがDebate APIへ接続できるようにする。
 - NetBirdではAccess Policyで、許可したクライアントからサーバーのTCP 8000番だけを許可する。
-- Tailscaleの推奨構成は、`tailscale serve` でlocalhostのDebate APIをHTTPS公開する方式とする。
+- Tailscaleを使う場合は、`tailscale serve` でlocalhostのDebate APIをHTTPS公開する方式を候補とする。
 - 直接接続方式では、8000番のホスト側ファイアウォールもオーバーレイ側に限定する。
 - SSHトンネル方式では、Debate APIを127.0.0.1だけで待ち受けさせ、SSHのローカルポートフォワーディングで接続する。
 - セットアップは `server/scripts/setup_ubuntu.sh --overlay tailscale` または `--overlay netbird` で切り替える。
@@ -296,7 +297,7 @@ OLLAMA_MODEL=gemma4:31b
 
 ## 11. 初版の受け入れ条件
 
-- TailscaleまたはNetBird内の許可されたブラウザから画面を開ける。
+- SSHトンネル、Tailscale、またはNetBirdのいずれかで許可されたブラウザから画面を開ける。
 - テーマを入力してディベートを開始できる。
 - 「次の発言」でA・B・Cが仕様どおりの順に発言する。
 - 生成中のテキストが該当パネルへ逐次表示される。
@@ -326,7 +327,7 @@ OLLAMA_MODEL=gemma4:31b
 
 - クライアント端末は選択したオーバーレイネットワークへ接続したノートPCとする。
 - 初版の表示はブラウザを第一候補とする。
-- ブラウザはTailscale ServeのHTTPS URL、またはTailscale/NetBirdのプライベートIPでDebate APIへ接続する。
+- ブラウザは初版ではSSHトンネル経由の `http://127.0.0.1:8000`、拡張構成ではTailscale ServeのHTTPS URLまたはTailscale/NetBirdのプライベートIPでDebate APIへ接続する。
 - クライアントはOllamaの `11434` 番ポートへ直接接続しない。
 - SSEは `GET /api/debates/{debate_id}/events` で購読する。
 - 「次の発言」は `POST` で開始し、結果はSSEで受け取る。
