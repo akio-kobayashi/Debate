@@ -63,7 +63,7 @@ def history_text(session: DebateSession) -> str:
         return "（まだ発言はありません）"
     return "\n".join(
         f"[{message.speaker} / {message.kind}]\n{message.text}"
-        for message in session.messages[-8:]
+        for message in session.messages
     )
 
 

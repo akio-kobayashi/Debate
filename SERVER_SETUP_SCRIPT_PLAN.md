@@ -51,7 +51,7 @@ Debate/server/scripts/
 OLLAMA_MODEL="gemma4:31b"
 OLLAMA_HOST="127.0.0.1:11434"
 OLLAMA_NO_CLOUD="1"
-DEBATE_NUM_CTX="8192"
+DEBATE_NUM_CTX="32768"
 ```
 
 設定値は環境変数またはコマンドライン引数で上書きできる。秘密情報は受け取らない。
@@ -193,7 +193,7 @@ ss -ltnp
 - 応答時間を記録できる
 - GPU/CPUの配置を表示できる
 
-初期動作確認ではnum_ctxを8192とする。
+初期値はnum_ctxを32768とする。実機のVRAM使用量と生成速度を確認し、必要ならOLLAMA_NUM_CTXで変更する。
 
 ### 60_verify_tailscale.sh
 

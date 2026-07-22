@@ -94,6 +94,16 @@ sudo DEBATE_USER=ubuntu DEBATE_BIND_HOST=127.0.0.1 \
 
 TailscaleやNetBirdを使わないため、`--overlay none` を指定する。
 
+コンテキスト長の初期値は `OLLAMA_NUM_CTX=32768` とする。RTX A6000 48GBでは8Kに固定する必要はない。さらに長くする場合は、セットアップ時に環境変数で変更できる。
+
+~~~bash
+sudo OLLAMA_NUM_CTX=65536 \
+  DEBATE_USER=ubuntu DEBATE_BIND_HOST=127.0.0.1 \
+  ./server/scripts/setup_ubuntu.sh \
+  --overlay none \
+  --model gemma4:31b
+~~~
+
 ## 5. サーバーの動作確認
 
 ~~~bash

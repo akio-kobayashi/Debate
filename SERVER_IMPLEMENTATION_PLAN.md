@@ -143,11 +143,11 @@ Debate/
 OLLAMA_BASE_URL=http://127.0.0.1:11434
 OLLAMA_MODEL=gemma4:31b
 DEBATE_MAX_CHARS=300
-DEBATE_NUM_CTX=8192
+DEBATE_NUM_CTX=32768
 OLLAMA_TIMEOUT_SECONDS=180
 ```
 
-モデル名はブラウザから変更させない。初版のコンテキスト長は8192を初期値とし、実機の速度とメモリ使用量を確認後に調整する。
+モデル名はブラウザから変更させない。初版のコンテキスト長は32768を初期値とし、RTX A6000 48GBで実測後に必要ならOLLAMA_NUM_CTXで調整する。
 
 ### domain/state.py
 
