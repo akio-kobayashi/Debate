@@ -179,6 +179,8 @@ DEBATE_URL=http://127.0.0.1:8000 ./client/launch_demo.sh
 
 SSHトンネル方式では、サーバーのSSH認証とホスト鍵管理が接続制御になる。複数クライアントから同時利用する場合や、教室内の複数端末へ配布する場合は、TailscaleまたはNetBirdの方が運用しやすい。
 
+クライアント側の具体的なSSH接続手順は [CLIENT_SETUP.md](CLIENT_SETUP.md) にまとめている。
+
 ## 6. クライアントを起動する
 
 ノートPC側でDebateリポジトリを取得し、次のようにAPIのURLを渡す。
