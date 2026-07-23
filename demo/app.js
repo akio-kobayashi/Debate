@@ -27,6 +27,114 @@ const escapeHtml = (value) => String(value || "").replace(/[&<>'"]/g, (char) => 
   "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;",
 }[char]));
 
+function renderInlineMarkdown(value) {
+  const codeTokens = [];
+  let source = String(value || "");
+  source = source.replace(/`([^`\n]+)`/g, (_match, code) => {
+    const token = "\u0000CODE" + codeTokens.length + "\u0000";
+    codeTokens.push("<code>" + escapeHtml(code) + "</code>");
+    return token;
+  });
+  source = escapeHtml(source);
+  source = source.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  source = source.replace(/\*\*(.+?)\*\*|__(.+?)__/g, (_match, boldA, boldB) =>
+    "<strong>" + (boldA || boldB) + "</strong>");
+  source = source.replace(/~~(.+?)~~/g, "<del>$1</del>");
+  source = source.replace(/\*([^*\n]+)\*/g, "<em>$1</em>");
+  source = source.replace(/(^|\s)_([^_\n]+)_($|\s)/g, "$1<em>$2</em>$3");
+  source = source.replace(/\n/g, "<br>");
+  return source.replace(/\u0000CODE(\d+)\u0000/g, (_match, index) => codeTokens[index]);
+}
+
+function renderMarkdown(value) {
+  const lines = String(value || "").replace(/\r\n?/g, "\n").split("\n");
+  const output = [];
+  let paragraph = [];
+  let listType = null;
+  let listItems = [];
+  let codeLines = null;
+  let codeLanguage = "";
+
+  const flushParagraph = () => {
+    if (!paragraph.length) return;
+    output.push("<p>" + renderInlineMarkdown(paragraph.join("\n")) + "</p>");
+    paragraph = [];
+  };
+  const flushList = () => {
+    if (!listType) return;
+    output.push("<" + listType + ">" + listItems.map((item) => "<li>" + item + "</li>").join("") +
+      "</" + listType + ">");
+    listType = null;
+    listItems = [];
+  };
+  const flushBlocks = () => {
+    flushParagraph();
+    flushList();
+  };
+
+  lines.forEach((line) => {
+    const fence = line.match(/^\s*```\s*([\w+-]*)\s*$/);
+    if (fence && codeLines === null) {
+      flushBlocks();
+      codeLines = [];
+      codeLanguage = fence[1] || "";
+      return;
+    }
+    if (fence && codeLines !== null) {
+      const languageClass = codeLanguage ? ' class="language-' + escapeHtml(codeLanguage) + '"' : "";
+      output.push("<pre><code" + languageClass + ">" + escapeHtml(codeLines.join("\n")) + "</code></pre>");
+      codeLines = null;
+      codeLanguage = "";
+      return;
+    }
+    if (codeLines !== null) {
+      codeLines.push(line);
+      return;
+    }
+
+    if (!line.trim()) {
+      flushBlocks();
+      return;
+    }
+    const heading = line.match(/^\s{0,3}(#{1,6})\s+(.+?)\s*#*\s*$/);
+    if (heading) {
+      flushBlocks();
+      const level = heading[1].length;
+      output.push("<h" + level + ">" + renderInlineMarkdown(heading[2]) + "</h" + level + ">");
+      return;
+    }
+    const unordered = line.match(/^\s{0,3}[-*+]\s+(.+)$/);
+    const ordered = line.match(/^\s{0,3}\d+[.)]\s+(.+)$/);
+    if (unordered || ordered) {
+      flushParagraph();
+      const nextListType = unordered ? "ul" : "ol";
+      if (listType && listType !== nextListType) flushList();
+      listType = nextListType;
+      listItems.push(renderInlineMarkdown((unordered || ordered)[1]));
+      return;
+    }
+    if (/^\s{0,3}([-*_])(?:\s*\1){2,}\s*$/.test(line)) {
+      flushBlocks();
+      output.push("<hr>");
+      return;
+    }
+    const quote = line.match(/^\s{0,3}>\s?(.*)$/);
+    if (quote) {
+      flushBlocks();
+      output.push("<blockquote><p>" + renderInlineMarkdown(quote[1]) + "</p></blockquote>");
+      return;
+    }
+    paragraph.push(line);
+  });
+
+  if (codeLines !== null) {
+    output.push("<pre><code>" + escapeHtml(codeLines.join("\n")) + "</code></pre>");
+  }
+  flushBlocks();
+  return '<div class="markdown-content">' + output.join("") + "</div>";
+}
+
 async function requestJson(path, options = {}) {
   const response = await fetch(API_BASE + path, {
     headers: { "Content-Type": "application/json" },
@@ -101,11 +209,19 @@ function roleStatus(speaker) {
 function renderRolePanels() {
   const aText = state.liveText.A || latestMessage("A")?.text || "";
   const bText = state.liveText.B || latestMessage("B")?.text || "";
+  ["A", "B", "C"].forEach((speaker) => {
+    const card = $(".role-" + speaker.toLowerCase());
+    const generating = state.session?.status === "generating" && state.session.current_speaker === speaker;
+    const stopping = state.session?.status === "stopping" && state.session.current_speaker === speaker;
+    card.classList.toggle("is-generating", generating);
+    card.classList.toggle("is-stopping", stopping);
+    card.setAttribute("aria-busy", generating ? "true" : "false");
+  });
   $("#bodyA").innerHTML = aText
-    ? "<p>" + escapeHtml(aText) + "</p>"
+    ? renderMarkdown(aText)
     : '<p class="empty-state">テーマを入力すると、ここに表示されます。</p>';
   $("#bodyB").innerHTML = bText
-    ? "<p>" + escapeHtml(bText) + "</p>"
+    ? renderMarkdown(bText)
     : '<p class="empty-state">テーマを入力すると、ここに表示されます。</p>';
   $("#statusA").innerHTML = roleStatus("A");
   $("#statusB").innerHTML = roleStatus("B");
@@ -131,12 +247,12 @@ function renderRolePanels() {
       : (context.next_instruction || nextInstruction());
   const speech = cText
     ? '<div class="c-section c-speech"><h3>ファシリテーターの発言</h3><div class="c-box c-speech-box">' +
-      escapeHtml(cText) + "</div></div>"
+      renderMarkdown(cText) + "</div></div>"
     : "";
   $("#bodyC").innerHTML = speech +
     '<div class="c-section"><h3>現在の論点</h3><div class="c-box">' +
-    escapeHtml(current) + '</div></div><div class="c-section"><h3>次の指示</h3><div class="c-box">' +
-    escapeHtml(next) + "</div></div>";
+    renderMarkdown(current) + '</div></div><div class="c-section"><h3>次の指示</h3><div class="c-box">' +
+    renderMarkdown(next) + "</div></div>";
 }
 
 function nextInstruction() {
@@ -222,15 +338,32 @@ function openMessageDialog(speaker) {
   const dialog = $("#messageDialog");
   const content = $("#messageDialogContent");
   const messages = messagesForSpeaker(speaker);
-  $("#messageDialogTitle").textContent = (SPEAKER_LABELS[speaker] || speaker) + " 発言全文";
-  content.innerHTML = messages.length
-    ? messages.map((message, index) => {
-      const label = TURN_LABELS[message.kind] || (message.kind === "live" ? "生成中" : "発言");
-      return '<article class="message-entry"><div class="message-entry-heading"><strong>' +
-        escapeHtml(label) + '</strong><span>第' + (index + 1) + '発言</span></div><p class="message-entry-text">' +
-        escapeHtml(message.text || "") + "</p></article>";
-    }).join("")
-    : '<p class="empty-state">まだ発言はありません。</p>';
+  $("#messageDialogTitle").textContent = (SPEAKER_LABELS[speaker] || speaker) +
+    " 発言全文（" + messages.length + "件）";
+  if (!messages.length) {
+    content.innerHTML = '<p class="empty-state">まだ発言はありません。</p>';
+    dialog.showModal();
+    return;
+  }
+
+  const renderEntry = (message, className) => {
+    const label = TURN_LABELS[message.kind] || (message.kind === "live" ? "生成中" : "発言");
+    const turnLabel = message.kind === "live"
+      ? "現在生成中"
+      : "第" + ((message.turn_index ?? 0) + 1) + "ターン・" + label;
+    return '<article class="message-entry ' + className + '"><div class="message-entry-heading"><strong>' +
+      escapeHtml(label) + '</strong><span>' + escapeHtml(turnLabel) + '</span></div><div class="message-entry-text">' +
+      renderMarkdown(message.text || "") + "</div></article>";
+  };
+
+  const current = messages[messages.length - 1];
+  const history = messages.slice(0, -1).reverse();
+  content.innerHTML = '<section class="message-dialog-current"><p class="message-dialog-section-label">現在の発言</p>' +
+    renderEntry(current, "message-entry-current") + "</section>" +
+    (history.length
+      ? '<section class="message-dialog-history"><h3>過去の発言履歴（' + history.length + '件）</h3>' +
+        history.map((message) => renderEntry(message, "message-entry-history")).join("") + "</section>"
+      : "");
   dialog.showModal();
 }
 
@@ -243,10 +376,10 @@ function openSummaryDialog() {
   const claims = ["A", "B"].map((speaker) => {
     const items = reference.claims?.[speaker] || [];
     return '<div class="summary-box"><h4>' + speaker + (speaker === "A" ? " 賛成側" : " 反対側") + "の論点</h4>" +
-      (items.length ? items.map((claim) => '<p><strong>' + escapeHtml(claim.id || speaker) + " " +
-        escapeHtml(claim.title || "") + "</strong><br>" + escapeHtml(claim.summary || "") +
-        (claim.basis ? "<br><small>根拠・具体例: " + escapeHtml(claim.basis) + "</small>" : "") +
-        "</p>").join("") : '<p class="empty-state">参照資料はまだ生成されていません。</p>') +
+      (items.length ? items.map((claim) => '<article class="claim-item"><strong>' + escapeHtml(claim.id || speaker) + " " +
+        renderInlineMarkdown(claim.title || "") + "</strong><br>" + renderMarkdown(claim.summary || "") +
+        (claim.basis ? '<div class="claim-basis"><strong>根拠・具体例:</strong>' + renderMarkdown(claim.basis) + "</div>" : "") +
+        "</article>").join("") : '<p class="empty-state">参照資料はまだ生成されていません。</p>') +
       "</div>";
   }).join("");
   const referenceLink = state.session?.reference_drive?.url
@@ -256,9 +389,9 @@ function openSummaryDialog() {
     '<p class="summary-dialog-intro">アンケート回答の前に、A・Bの最終主張と、Cによる最終整理を確認してください。</p>' +
     '<div class="summary-grid">' +
     claims +
-    '<div class="summary-box"><h4>A 賛成側の最終主張</h4><p>' + escapeHtml(aMessage?.text || "未生成") + "</p></div>" +
-    '<div class="summary-box"><h4>B 反対側の最終主張</h4><p>' + escapeHtml(bMessage?.text || "未生成") + "</p></div>" +
-    '<div class="summary-box"><h4>C ファシリテーターの最終整理</h4><p>' + escapeHtml(cMessage?.text || "未生成") + "</p></div>" +
+    '<div class="summary-box"><h4>A 賛成側の最終主張</h4>' + renderMarkdown(aMessage?.text || "未生成") + "</div>" +
+    '<div class="summary-box"><h4>B 反対側の最終主張</h4>' + renderMarkdown(bMessage?.text || "未生成") + "</div>" +
+    '<div class="summary-box"><h4>C ファシリテーターの最終整理</h4>' + renderMarkdown(cMessage?.text || "未生成") + "</div>" +
     '</div><p class="summary-dialog-note">必要であれば、各パネルの「全文」から過去の発言も確認できます。</p>' +
     '<div class="section-footer"><span class="button-hint">資料を保存してから回答受付を開始します。</span>' + referenceLink + '</div>';
   $("#stageDialog").showModal();
@@ -280,8 +413,8 @@ function openAnalysisDialog() {
   $("#stageContent").innerHTML =
     '<p class="summary-dialog-intro">集計値はサーバーで計算し、Cはその結果を解釈しています。</p>' +
     '<div class="analysis-list">' + (rows || '<p class="empty-state">分析結果はまだありません。</p>') + "</div>" +
-    (analysis.interpretation ? '<div class="summary-box analysis-interpretation"><h4>Cによる分析</h4><p>' +
-      escapeHtml(analysis.interpretation) + "</p></div>" : "") +
+    (analysis.interpretation ? '<div class="summary-box analysis-interpretation"><h4>Cによる分析</h4>' +
+      renderMarkdown(analysis.interpretation) + "</div>" : "") +
     '<div class="section-footer">' + reportLink + "</div>";
   $("#stageDialog").showModal();
 }
