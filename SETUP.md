@@ -239,7 +239,7 @@ ollama ps
 Ollama本体の更新とモデル更新は別である。Ollama更新後にDebate APIを確認する。
 
 初版ではアンケートやGoogle Drive連携を使用しない。完了後はブラウザの「PDFをダウンロード」から、
-Markdown形式の発言とCの整理をPDFとして保存する。PDF生成に必要なreportlabは`server/requirements.txt`に含めている。
+CのMarkdown形式の最終整理だけをPDFとして保存する。PDF生成に必要なreportlabは`server/requirements.txt`に含めている。
 
 ~~~bash
 sudo systemctl status debate-api --no-pager

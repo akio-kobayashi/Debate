@@ -17,7 +17,6 @@ from reportlab.pdfbase.cidfonts import UnicodeCIDFont
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (
     HRFlowable,
-    PageBreak,
     Paragraph,
     Preformatted,
     SimpleDocTemplate,
@@ -218,7 +217,7 @@ def _footer(canvas: Any, _document: Any) -> None:
 
 
 def build_debate_pdf(session: dict[str, Any]) -> bytes:
-    """Convert the completed debate's Markdown messages into a downloadable PDF."""
+    """Convert C's final Markdown summary into a downloadable PDF."""
     _register_fonts()
     styles = _styles()
     output = io.BytesIO()
@@ -237,47 +236,11 @@ def build_debate_pdf(session: dict[str, Any]) -> bytes:
         Paragraph(f"テーマ: {_inline_markup(session.get('theme', ''))}", styles["subtitle"]),
     ]
 
-    context = session.get("theme_context") or {}
-    story.append(Paragraph("学生同士の議論の出発点", styles["h1"]))
+    story.append(Paragraph("Cの最終整理", styles["h1"]))
     story.extend(_markdown_flowables(
-        "### Cの最終整理\n" + _text(_latest_message(session, "C", "summary")),
+        _latest_message(session, "C", "summary"),
         styles,
     ))
-    story.append(Paragraph("中心論点", styles["h2"]))
-    story.extend(_markdown_flowables(
-        _text(context.get("current_issue") or "Cが整理した中心論点を確認してください。"),
-        styles,
-    ))
-    story.append(Paragraph("学生への問い", styles["h2"]))
-    story.extend(_markdown_flowables(
-        _text(context.get("next_instruction") or "AとBの主張を比較し、自分の考えを述べてください。"),
-        styles,
-    ))
-
-    story.append(PageBreak())
-    story.append(Paragraph("A・Bの最終主張", styles["h1"]))
-    for speaker, label, color in (
-        ("A", "賛成側", "#1f66d1"),
-        ("B", "反対側", "#d83a3a"),
-    ):
-        story.append(Paragraph(
-            f'<font color="{color}">{speaker} {label}</font>', styles["speaker"],
-        ))
-        story.extend(_markdown_flowables(
-            _text(_latest_message(session, speaker, "closing") or _latest_message(session, speaker)),
-            styles,
-        ))
-
-    story.append(PageBreak())
-    story.append(Paragraph("発言履歴", styles["h1"]))
-    for message in session.get("messages", []):
-        story.append(Paragraph(
-            f"第{int(message.get('turn_index', 0)) + 1}ターン　"
-            f"{_inline_markup(message.get('speaker', ''))}　"
-            f"{_inline_markup(message.get('kind', '発言'))}",
-            styles["speaker"],
-        ))
-        story.extend(_markdown_flowables(message.get("text", ""), styles))
 
     document.build(story, onFirstPage=_footer, onLaterPages=_footer)
     return output.getvalue()

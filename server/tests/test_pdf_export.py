@@ -16,34 +16,39 @@ class PdfExportTests(unittest.TestCase):
         payload = {
             "theme": "大学の授業で生成AIの使用を認めるべきである",
             "theme_context": {
-                "current_issue": "学習効果と公平性の両立",
-                "next_instruction": "同意点と追加条件を話し合う",
+                "current_issue": "CURRENT_ISSUE_SHOULD_NOT_APPEAR",
             },
             "messages": [
-                {
-                    "speaker": "C",
-                    "turn_index": 9,
-                    "kind": "summary",
-                    "text": "### 合意できる点\n- 利用方法の指導が必要",
-                },
                 {
                     "speaker": "A",
                     "turn_index": 7,
                     "kind": "closing",
-                    "text": "利用を認めるべきです。",
+                    "text": "A_ONLY_SHOULD_NOT_APPEAR",
                 },
                 {
                     "speaker": "B",
                     "turn_index": 8,
                     "kind": "closing",
-                    "text": "慎重な制限が必要です。",
+                    "text": "B_ONLY_SHOULD_NOT_APPEAR",
+                },
+                {
+                    "speaker": "C",
+                    "turn_index": 9,
+                    "kind": "summary",
+                    "text": "### Cの最終整理\n- C_SUMMARY_ONLY",
                 },
             ],
         }
 
         pdf = build_debate_pdf(payload)
         self.assertTrue(pdf.startswith(b"%PDF-"))
-        self.assertEqual(len(PdfReader(io.BytesIO(pdf)).pages), 3)
+        reader = PdfReader(io.BytesIO(pdf))
+        self.assertEqual(len(reader.pages), 1)
+        extracted = "\n".join(page.extract_text() or "" for page in reader.pages)
+        self.assertIn("C_SUMMARY_ONLY", extracted)
+        self.assertNotIn("A_ONLY_SHOULD_NOT_APPEAR", extracted)
+        self.assertNotIn("B_ONLY_SHOULD_NOT_APPEAR", extracted)
+        self.assertNotIn("CURRENT_ISSUE_SHOULD_NOT_APPEAR", extracted)
 
 
 if __name__ == "__main__":

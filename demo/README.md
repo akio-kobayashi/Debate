@@ -27,6 +27,6 @@ python3 -m http.server 4173 --directory demo
 - 10ターンの進行履歴表示
 - Cの最終整理の確認
 - Cの整理を出発点にした学生同士の議論への移行
-- Markdown形式の結果をPDFとしてダウンロード
+- CのMarkdown形式の最終整理をPDFとしてダウンロード
 
-初版ではアンケートやGoogle Drive連携を使用しません。完了後の結果保存はPDFダウンロードで行います。
+初版ではアンケートやGoogle Drive連携を使用しません。完了後はCの最終整理だけをPDFで保存します。

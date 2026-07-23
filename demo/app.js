@@ -365,14 +365,12 @@ function openStudentDiscussionDialog() {
   const cMessage = latestMessageOfKind("C", "summary") || latestMessage("C");
   const context = state.session?.theme_context || {};
   const currentIssue = context.current_issue || "Cが整理した中心論点を確認してください。";
-  const nextInstruction = context.next_instruction || "AとBの主張を比較し、自分の考えを述べてください。";
   $("#stageDialog .dialog-heading h2").textContent = "学生同士の議論へ";
   $("#stageContent").innerHTML =
     '<p class="summary-dialog-intro">ここからは、Cのまとめを出発点に学生同士で議論します。AIが結論を決めるのではなく、整理された論点をもとに自分の考えを検討してください。</p>' +
     '<div class="discussion-start-grid">' +
     '<div class="summary-box discussion-summary-box"><h4>Cの最終整理</h4>' + renderMarkdown(cMessage?.text || "未生成") + "</div>" +
     '<div class="summary-box"><h4>議論の中心論点</h4>' + renderMarkdown(currentIssue) + "</div>" +
-    '<div class="summary-box"><h4>学生への問い</h4>' + renderMarkdown(nextInstruction) + "</div>" +
     '</div>' +
     '<p class="summary-dialog-note">A・Bの主張とCの整理を参照し、同意できる点、疑問点、反対意見、追加すべき条件を学生同士で話し合ってください。</p>';
   $("#stageDialog").showModal();
