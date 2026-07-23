@@ -1,7 +1,7 @@
 import unittest
 
 from server.app.prompts import build_messages, build_reference_messages
-from server.app.state import DebateSession
+from server.app.state import DebateSession, TURN_PLAN
 from server.app.theme_context import extract_theme_context
 
 
@@ -48,6 +48,16 @@ class PromptMarkdownTests(unittest.TestCase):
 
         self.assertIn("必ずJSONオブジェクトだけ", system)
         self.assertIn("Markdownのコードブロックは禁止", system)
+
+    def test_turn_plan_reconciles_after_both_rebuttals(self) -> None:
+        self.assertEqual(len(TURN_PLAN), 10)
+        self.assertEqual(TURN_PLAN[5], ("B", "rebuttal"))
+        self.assertEqual(TURN_PLAN[6], ("C", "reconcile"))
+        self.assertEqual(TURN_PLAN[7], ("A", "closing"))
+
+        messages = build_messages(self.session, "C", "reconcile")
+        self.assertIn("### Aの反論への応答状況", messages[1]["content"])
+        self.assertIn("### 未解決の点", messages[1]["content"])
 
 
 if __name__ == "__main__":

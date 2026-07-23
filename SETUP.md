@@ -28,7 +28,7 @@ Ubuntuサーバー
 役割は次のとおり。
 
 - Ollama：LLM推論
-- Debate API：A・B・Cの役割、9ターンの進行、プロンプト生成、SSE配信
+- Debate API：A・B・Cの役割、10ターンの進行、プロンプト生成、SSE配信
 - Web画面：Debate APIが配信するブラウザ画面
 - SSHトンネル：ノートPCからサーバーのDebate APIへ接続
 
@@ -89,8 +89,9 @@ sudo DEBATE_USER=ubuntu DEBATE_BIND_HOST=127.0.0.1 \
 4. `OLLAMA_HOST=127.0.0.1:11434` を設定
 5. `gemma4:31b` を取得
 6. Debate API用Python仮想環境を作成
-7. Debate APIをsystemdサービスとして起動
-8. localhostのヘルスチェックを実行
+7. PDF用の日本語フォントとPython依存関係を導入
+8. Debate APIをsystemdサービスとして起動
+9. localhostのヘルスチェックを実行
 
 TailscaleやNetBirdを使わないため、`--overlay none` を指定する。
 
@@ -175,11 +176,12 @@ http://127.0.0.1:8000/
 1. テーマを入力
 2. 「次の発言」を押す
 3. Cがテーマを整理
-4. A、B、Cが固定された9ターンで発言
+4. A、B、Cが固定された10ターンで発言
 5. 生成中は次の操作を待つ
 6. 必要に応じて「停止」
 7. 最終ターン後にCのまとめを確認
-8. 「リセット」で次のテーマへ進む
+8. Cのまとめを出発点に、学生同士の議論へ移行する
+9. 「リセット」で次のテーマへ進む
 
 LLM生成はサーバー全体で同時に1件だけ実行する。
 
@@ -236,8 +238,8 @@ ollama ps
 
 Ollama本体の更新とモデル更新は別である。Ollama更新後にDebate APIを確認する。
 
-Google Form回答の取得、アンケート用参照資料と分析レポートのGoogle Drive保存を使う場合は、
-[GOOGLE_WORKSPACE_SETUP.md](GOOGLE_WORKSPACE_SETUP.md)を追加で設定する。
+初版ではアンケートやGoogle Drive連携を使用しない。完了後はブラウザの「PDFをダウンロード」から、
+Markdown形式の発言とCの整理をPDFとして保存する。PDF生成に必要なreportlabは`server/requirements.txt`に含めている。
 
 ~~~bash
 sudo systemctl status debate-api --no-pager

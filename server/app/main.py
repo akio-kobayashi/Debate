@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -104,30 +104,44 @@ async def reset_debate(debate_id: str) -> dict[str, Any]:
         raise handle_controller_error(exc) from exc
 
 
-@app.post("/api/debates/{debate_id}/reference", status_code=202)
-async def generate_reference(debate_id: str) -> dict[str, Any]:
+@app.get("/api/debates/{debate_id}/export.pdf")
+async def export_debate_pdf(debate_id: str) -> Response:
     try:
-        session = await controller.start_reference(debate_id)
+        pdf = await controller.export_pdf(debate_id)
     except ControllerError as exc:
         raise handle_controller_error(exc) from exc
-    return {"status": "accepted", "state": session.public()}
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="Debate_{debate_id}.pdf"',
+            "Cache-Control": "no-store",
+        },
+    )
+
+
+@app.post("/api/debates/{debate_id}/reference", status_code=202)
+async def generate_reference(debate_id: str) -> dict[str, Any]:
+    raise HTTPException(
+        status_code=410,
+        detail="Google Drive reference export is disabled; use GET /api/debates/{id}/export.pdf",
+    )
 
 
 @app.post("/api/debates/{debate_id}/survey/start")
 async def start_survey(debate_id: str) -> dict[str, Any]:
-    try:
-        return (await controller.start_survey(debate_id)).public()
-    except ControllerError as exc:
-        raise handle_controller_error(exc) from exc
+    raise HTTPException(
+        status_code=410,
+        detail="Survey workflow is disabled in the initial version; use the facilitator summary and student discussion",
+    )
 
 
 @app.post("/api/debates/{debate_id}/survey/analyze", status_code=202)
 async def analyze_survey(debate_id: str) -> dict[str, Any]:
-    try:
-        session = await controller.start_survey_analysis(debate_id)
-    except ControllerError as exc:
-        raise handle_controller_error(exc) from exc
-    return {"status": "accepted", "state": session.public()}
+    raise HTTPException(
+        status_code=410,
+        detail="Survey workflow is disabled in the initial version; use the facilitator summary and student discussion",
+    )
 
 
 demo_dir = Path(__file__).resolve().parents[2] / "demo"

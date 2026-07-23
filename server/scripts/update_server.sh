@@ -105,11 +105,15 @@ if [[ "$PULL_MODEL" -eq 1 ]]; then
 fi
 
 [[ -x "${SERVER_DIR}/.venv/bin/pip" ]] || die "Python virtual environment was not found"
+log "installing Japanese PDF font"
+apt-get update
+apt-get install -y fonts-noto-cjk
 log "installing Python dependencies"
 "${SERVER_DIR}/.venv/bin/pip" install -r "${SERVER_DIR}/requirements.txt"
 
 set_env_value OLLAMA_MODEL "$MODEL"
 set_env_value OLLAMA_NUM_CTX "$NUM_CTX"
+set_env_value DEBATE_PDF_FONT_PATH "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"
 chmod 0644 "$ENV_FILE"
 
 log "restarting services"

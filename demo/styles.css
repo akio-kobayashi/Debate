@@ -232,7 +232,7 @@ main {
 .dialog-close { width: 28px; height: 28px; border: 0; border-radius: 7px; color: #c8d3e3; background: #29374b; font-size: 20px; line-height: 1; }
 .stage-dialog > #stageContent { padding: 15px 17px 18px; }
 .stage-dialog .stage-intro { margin: 7px 0 13px; color: #aab7ca; font-size: 11px; line-height: 1.6; }
-.stage-dialog .stage-grid, .stage-dialog .argument-grid, .stage-dialog .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.stage-dialog .stage-grid, .stage-dialog .argument-grid, .stage-dialog .summary-grid, .stage-dialog .discussion-start-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 .stage-dialog .info-box, .stage-dialog .summary-box { padding: 10px; border: 1px solid #33445c; border-radius: 8px; background: var(--surface-raised); }
 .stage-dialog .info-box h4, .stage-dialog .summary-box h4 { margin: 0 0 5px; font-size: 10px; }
 .stage-dialog .info-box p, .stage-dialog .summary-box p { margin: 0; font-size: 10px; line-height: 1.6; }
@@ -247,6 +247,7 @@ main {
 .stage-dialog .button-hint { margin-right: auto; color: #8d9bb0; font-size: 9px; }
 .stage-dialog .primary-button, .stage-dialog .secondary-button { min-height: 34px; padding: 0 11px; font-size: 10px; }
 .summary-dialog .summary-box:last-child { grid-column: 1 / -1; }
+.discussion-start-grid .discussion-summary-box { grid-column: 1 / -1; }
 .summary-dialog .summary-box p { font-size: 13px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
 .message-dialog { width: min(1440px, calc(100vw - 32px)); height: min(94vh, 940px); max-height: 94vh; margin: auto; padding: 0; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: var(--surface); box-shadow: 0 24px 70px rgba(0, 0, 0, .5); overflow: hidden; }
 .message-dialog::backdrop { background: rgba(0, 0, 0, .68); }

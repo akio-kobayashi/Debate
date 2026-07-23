@@ -99,7 +99,7 @@ log "overlay: $OVERLAY_PROVIDER"
 log "runtime user: $DEBATE_USER"
 
 apt-get update
-apt-get install -y curl ca-certificates python3 python3-venv python3-pip
+apt-get install -y curl ca-certificates python3 python3-venv python3-pip fonts-noto-cjk
 
 if ! command -v ollama >/dev/null 2>&1; then
   log "installing Ollama"
@@ -174,6 +174,7 @@ OLLAMA_TIMEOUT_SECONDS=${OLLAMA_TIMEOUT_SECONDS:-300}
 DEBATE_BIND_HOST=$BIND_HOST
 DEBATE_PORT=$DEBATE_PORT
 OVERLAY_PROVIDER=$OVERLAY_PROVIDER
+DEBATE_PDF_FONT_PATH=/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc
 ENV_FILE
 if [[ -n "${GOOGLE_FORM_ID:-}" ]]; then
   printf 'GOOGLE_FORM_ID=%s\n' "$GOOGLE_FORM_ID" >> /etc/debate-api.env

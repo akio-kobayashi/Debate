@@ -4,12 +4,14 @@ const TURN_LABELS = {
   opening: "立論",
   organize: "整理",
   rebuttal: "反論",
+  reconcile: "再整理",
   closing: "最終弁論",
   summary: "まとめ",
 };
 const TURN_PLAN = [
   ["C", "define"], ["A", "opening"], ["B", "opening"],
   ["C", "organize"], ["A", "rebuttal"], ["B", "rebuttal"],
+  ["C", "reconcile"],
   ["A", "closing"], ["B", "closing"], ["C", "summary"],
 ];
 
@@ -156,14 +158,15 @@ function setFooter(status, message, loading = false) {
 function roundNumber() {
   if (!state.session) return 1;
   if (state.activeTurn !== null) return state.activeTurn + 1;
-  return Math.min((state.session.next_turn || 0) + 1, state.session.total_turns || 9);
+  return Math.min((state.session.next_turn || 0) + 1, state.session.total_turns || 10);
 }
 
 function renderRound() {
   const round = roundNumber();
   $("#progressTitle").textContent = "Round " + round;
-  $("#progressCount").textContent = "/ 9";
-  $("#roundProgressBar").style.width = ((round / 9) * 100) + "%";
+  const totalTurns = state.session?.total_turns || TURN_PLAN.length;
+  $("#progressCount").textContent = "/ " + totalTurns;
+  $("#roundProgressBar").style.width = ((round / totalTurns) * 100) + "%";
 }
 
 function latestMessage(speaker) {
@@ -284,7 +287,8 @@ function renderControls() {
   const generating = ["generating", "stopping"].includes(state.session?.status);
   const finished = state.session?.status === "finished";
   $("#summaryButton").classList.toggle("hidden", !finished);
-  renderSurveyAction();
+  $("#studentDiscussionButton").classList.toggle("hidden", !finished);
+  $("#pdfDownloadButton").classList.toggle("hidden", !finished);
   $("#startButton").disabled = generating || finished;
   $("#stopButton").disabled = !generating;
   $("#startButton").innerHTML = finished ? "終了" : "次の発言 <span>›</span>";
@@ -300,31 +304,6 @@ function renderControls() {
     setFooter("完了", "ディベートの最終整理が完了しました");
   } else {
     setFooter("待機中", "次の発言を押して進行します");
-  }
-}
-
-function renderSurveyAction() {
-  const button = $("#surveyActionButton");
-  const session = state.session;
-  if (!button || !session || session.status !== "finished") {
-    if (button) button.classList.add("hidden");
-    return;
-  }
-  button.classList.remove("hidden");
-  button.disabled = false;
-  if (session.reference_status === "generating" || session.survey_status === "analyzing") {
-    button.textContent = "処理中…";
-    button.disabled = true;
-  } else if (session.reference_status !== "uploaded") {
-    button.textContent = session.reference_status === "error" ? "参照資料を再生成" : "参照資料を生成";
-  } else if (session.survey_status === "not_started") {
-    button.textContent = "回答受付開始";
-  } else if (session.survey_status === "collecting") {
-    button.textContent = "回答を取得・分析";
-  } else if (session.survey_status === "completed") {
-    button.textContent = "分析結果を表示";
-  } else {
-    button.textContent = "回答分析を再試行";
   }
 }
 
@@ -372,51 +351,42 @@ function openSummaryDialog() {
   const bMessage = latestMessageOfKind("B", "closing") || latestMessage("B");
   const cMessage = latestMessageOfKind("C", "summary") || latestMessage("C");
   $("#stageDialog .dialog-heading h2").textContent = "ファシリテーターの最終整理";
-  const reference = state.session?.reference_data || {};
-  const claims = ["A", "B"].map((speaker) => {
-    const items = reference.claims?.[speaker] || [];
-    return '<div class="summary-box"><h4>' + speaker + (speaker === "A" ? " 賛成側" : " 反対側") + "の論点</h4>" +
-      (items.length ? items.map((claim) => '<article class="claim-item"><strong>' + escapeHtml(claim.id || speaker) + " " +
-        renderInlineMarkdown(claim.title || "") + "</strong><br>" + renderMarkdown(claim.summary || "") +
-        (claim.basis ? '<div class="claim-basis"><strong>根拠・具体例:</strong>' + renderMarkdown(claim.basis) + "</div>" : "") +
-        "</article>").join("") : '<p class="empty-state">参照資料はまだ生成されていません。</p>') +
-      "</div>";
-  }).join("");
-  const referenceLink = state.session?.reference_drive?.url
-    ? '<a class="drive-link" target="_blank" rel="noopener" href="' + escapeHtml(state.session.reference_drive.url) + '">Google Driveで参照資料を開く</a>'
-    : "";
   $("#stageContent").innerHTML =
-    '<p class="summary-dialog-intro">アンケート回答の前に、A・Bの最終主張と、Cによる最終整理を確認してください。</p>' +
+    '<p class="summary-dialog-intro">A・Bの最終主張と、Cによる最終整理を確認してください。この整理を出発点に、学生同士の議論へ移行します。</p>' +
     '<div class="summary-grid">' +
-    claims +
     '<div class="summary-box"><h4>A 賛成側の最終主張</h4>' + renderMarkdown(aMessage?.text || "未生成") + "</div>" +
     '<div class="summary-box"><h4>B 反対側の最終主張</h4>' + renderMarkdown(bMessage?.text || "未生成") + "</div>" +
     '<div class="summary-box"><h4>C ファシリテーターの最終整理</h4>' + renderMarkdown(cMessage?.text || "未生成") + "</div>" +
-    '</div><p class="summary-dialog-note">必要であれば、各パネルの「全文」から過去の発言も確認できます。</p>' +
-    '<div class="section-footer"><span class="button-hint">資料を保存してから回答受付を開始します。</span>' + referenceLink + '</div>';
+    '</div><p class="summary-dialog-note">必要であれば、各パネルの「全文」から過去の発言も確認できます。</p>';
   $("#stageDialog").showModal();
 }
 
-function openAnalysisDialog() {
-  const analysis = state.session?.survey_analysis || {};
-  const rows = (analysis.questions || []).map((question) =>
-    '<article class="analysis-question"><h4>' + escapeHtml(question.question || "") +
-    "</h4><p>回答数: " + escapeHtml(question.answered || 0) + "</p><ul>" +
-    (question.distribution || []).map((item) => '<li><span>' + escapeHtml(item.value || "") +
-      "</span><strong>" + escapeHtml(item.count || 0) + "人（" + escapeHtml(item.percentage || 0) +
-      "%）</strong></li>").join("") + "</ul></article>"
-  ).join("");
-  const reportLink = state.session?.survey_drive?.url
-    ? '<a class="drive-link" target="_blank" rel="noopener" href="' + escapeHtml(state.session.survey_drive.url) + '">Google Driveで分析レポートを開く</a>'
-    : "";
-  $("#stageDialog .dialog-heading h2").textContent = "アンケート分析結果";
+function openStudentDiscussionDialog() {
+  const cMessage = latestMessageOfKind("C", "summary") || latestMessage("C");
+  const context = state.session?.theme_context || {};
+  const currentIssue = context.current_issue || "Cが整理した中心論点を確認してください。";
+  const nextInstruction = context.next_instruction || "AとBの主張を比較し、自分の考えを述べてください。";
+  $("#stageDialog .dialog-heading h2").textContent = "学生同士の議論へ";
   $("#stageContent").innerHTML =
-    '<p class="summary-dialog-intro">集計値はサーバーで計算し、Cはその結果を解釈しています。</p>' +
-    '<div class="analysis-list">' + (rows || '<p class="empty-state">分析結果はまだありません。</p>') + "</div>" +
-    (analysis.interpretation ? '<div class="summary-box analysis-interpretation"><h4>Cによる分析</h4>' +
-      renderMarkdown(analysis.interpretation) + "</div>" : "") +
-    '<div class="section-footer">' + reportLink + "</div>";
+    '<p class="summary-dialog-intro">ここからは、Cのまとめを出発点に学生同士で議論します。AIが結論を決めるのではなく、整理された論点をもとに自分の考えを検討してください。</p>' +
+    '<div class="discussion-start-grid">' +
+    '<div class="summary-box discussion-summary-box"><h4>Cの最終整理</h4>' + renderMarkdown(cMessage?.text || "未生成") + "</div>" +
+    '<div class="summary-box"><h4>議論の中心論点</h4>' + renderMarkdown(currentIssue) + "</div>" +
+    '<div class="summary-box"><h4>学生への問い</h4>' + renderMarkdown(nextInstruction) + "</div>" +
+    '</div>' +
+    '<p class="summary-dialog-note">A・Bの主張とCの整理を参照し、同意できる点、疑問点、反対意見、追加すべき条件を学生同士で話し合ってください。</p>';
   $("#stageDialog").showModal();
+}
+
+function downloadPdf() {
+  if (!state.debateId || state.session?.status !== "finished") return;
+  const link = document.createElement("a");
+  link.href = API_BASE + "/api/debates/" + encodeURIComponent(state.debateId) + "/export.pdf";
+  link.download = "Debate_" + state.debateId + ".pdf";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setFooter("PDFダウンロード", "PDFのダウンロードを開始しました");
 }
 
 function applySession(session) {
@@ -461,17 +431,6 @@ function handleEvent(event) {
   }
   if (["turn_stopped", "stopping", "debate_finished"].includes(event.type)) {
     if (payload.state) applySession(payload.state);
-    return;
-  }
-  if ([
-    "reference_started", "reference_ready", "reference_completed", "reference_error",
-    "survey_started", "survey_analysis_started", "survey_aggregated",
-    "survey_analysis_completed", "survey_analysis_error",
-  ].includes(event.type)) {
-    if (payload.state) applySession(payload.state);
-    if (event.type.endsWith("error")) {
-      setFooter("エラー", payload.message || state.session?.survey_error || "アンケート処理に失敗しました");
-    }
     return;
   }
   if (event.type === "error") {
@@ -570,37 +529,13 @@ async function reconnect() {
   }
 }
 
-async function runSurveyAction() {
-  if (!state.debateId || !state.session || state.session.status !== "finished") return;
-  const session = state.session;
-  try {
-    if (session.reference_status !== "uploaded") {
-      await requestJson("/api/debates/" + encodeURIComponent(state.debateId) + "/reference", { method: "POST" });
-      setFooter("参照資料を生成中", "Google Driveへ保存しています…", true);
-    } else if (session.survey_status === "not_started") {
-      applySession(await requestJson("/api/debates/" + encodeURIComponent(state.debateId) + "/survey/start", { method: "POST" }));
-      setFooter("回答受付中", "参照資料を確認してGoogle Formへ回答してください");
-      if (state.session.reference_drive?.url) window.open(state.session.reference_drive.url, "_blank", "noopener");
-    } else if (session.survey_status === "collecting") {
-      await requestJson("/api/debates/" + encodeURIComponent(state.debateId) + "/survey/analyze", { method: "POST" });
-      setFooter("アンケート分析中", "回答を取得してCが分析しています…", true);
-    } else if (session.survey_status === "completed") {
-      openAnalysisDialog();
-    } else {
-      await requestJson("/api/debates/" + encodeURIComponent(state.debateId) + "/survey/analyze", { method: "POST" });
-      setFooter("アンケート分析中", "回答を取得してCが分析しています…", true);
-    }
-  } catch (error) {
-    setFooter("処理エラー", error.message || "アンケート処理に失敗しました");
-  }
-}
-
 $("#themeForm").addEventListener("submit", startOrNext);
 $("#stopButton").addEventListener("click", stopGeneration);
 $("#resetButton").addEventListener("click", resetDebate);
 $("#reconnectButton").addEventListener("click", reconnect);
 $("#summaryButton").addEventListener("click", openSummaryDialog);
-$("#surveyActionButton").addEventListener("click", runSurveyAction);
+$("#studentDiscussionButton").addEventListener("click", openStudentDiscussionDialog);
+$("#pdfDownloadButton").addEventListener("click", downloadPdf);
 $("#closeStageDialogButton").addEventListener("click", () => $("#stageDialog").close());
 document.querySelectorAll(".role-detail-button").forEach((button) => {
   button.addEventListener("click", () => openMessageDialog(button.dataset.speaker));

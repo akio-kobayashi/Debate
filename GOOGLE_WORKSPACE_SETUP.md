@@ -1,5 +1,7 @@
 # Google Forms / Drive連携
 
+> この文書は旧版の拡張機能用です。初版ではGoogle Forms / Drive連携を使用せず、画面の「PDFをダウンロード」で結果を保存します。旧版APIも外部処理を開始しないよう無効化しています。
+
 Debate Demoは、ディベート終了後に次の2つをGoogle Driveへ保存できます。
 
 - アンケート回答用の論点参照資料

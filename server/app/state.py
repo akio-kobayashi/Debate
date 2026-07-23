@@ -14,6 +14,7 @@ TURN_PLAN: list[tuple[str, str]] = [
     ("C", "organize"),
     ("A", "rebuttal"),
     ("B", "rebuttal"),
+    ("C", "reconcile"),
     ("A", "closing"),
     ("B", "closing"),
     ("C", "summary"),

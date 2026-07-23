@@ -9,6 +9,7 @@ from .config import Settings
 from .documents import build_analysis_docx, build_reference_docx
 from .google_workspace import GoogleWorkspaceClient
 from .ollama_client import GenerationStopped, OllamaClient, OllamaError
+from .pdf_export import build_debate_pdf
 from .prompts import build_analysis_messages, build_messages, build_reference_messages
 from .state import DebateSession, SessionStore, TURN_PLAN, now_iso
 from .survey import aggregate_responses, normalize_responses
@@ -67,6 +68,14 @@ class DebateController:
         if session is None:
             raise SessionNotFound("debate session not found")
         return session
+
+    async def export_pdf(self, debate_id: str) -> bytes:
+        session = await self.get(debate_id)
+        async with session.lock:
+            if session.status != "finished":
+                raise ControllerError("PDF export requires a finished debate")
+            snapshot = session.public()
+        return await asyncio.to_thread(build_debate_pdf, snapshot)
 
     async def start_next(self, debate_id: str) -> DebateSession:
         session = await self.get(debate_id)
@@ -363,8 +372,14 @@ class DebateController:
             from .state import DebateMessage
 
             session.messages.append(DebateMessage(**message))
-            if turn_index == 0 and speaker == "C":
-                session.theme_context = extract_theme_context(text)
+            if speaker == "C" and kind in {"define", "organize", "reconcile"}:
+                parsed_context = extract_theme_context(text)
+                if turn_index == 0:
+                    session.theme_context = parsed_context
+                else:
+                    for key in ("current_issue", "next_instruction"):
+                        if parsed_context.get(key):
+                            session.theme_context[key] = parsed_context[key]
             session.next_turn = turn_index + 1
             session.current_speaker = None
             session.current_kind = None

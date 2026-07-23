@@ -148,7 +148,7 @@ Domain層には外部I/Oを持たせない。
 
 ### turn_plan.py
 
-固定9ターンを定義する。
+固定10ターンを定義する。
 
 ```python
 TURN_PLAN = [
@@ -158,6 +158,7 @@ TURN_PLAN = [
     ("C", "organize"),
     ("A", "rebuttal"),
     ("B", "rebuttal"),
+    ("C", "reconcile"),
     ("A", "closing"),
     ("B", "closing"),
     ("C", "summary"),
